@@ -2,7 +2,7 @@
 
 > Allows to flash SiLabs EFM8 BB based MCU via Brwoser and an Arduino UNO or Nano.
 
-Check it out here: https://github.com/xxx
+Check it out here: https://stylesuxx.github.io/arduino-c2-flasher/
 
 ## Arduino Code
 

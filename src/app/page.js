@@ -6,11 +6,14 @@ import {
   useState,
 } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import avrbro from 'avrbro';
 import Dropzone from 'react-dropzone';
 
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/js/bootstrap.js';
+const DynamicHeader = dynamic(() => import('bootstrap/dist/js/bootstrap.js'), {
+  ssr: false,
+})
 
 import C2 from './C2';
 import {
@@ -45,6 +48,7 @@ export default function Home() {
   const [hasWritten, setHasWritten] = useState(false);
 
   const [disableControls, setDisableControls] = useState(false);
+  const [supportedBrowser, setSupportedBrowser] = useState(true);
 
   const c2 = useRef(null);
   const readDataTemp = useRef([]);
@@ -312,6 +316,8 @@ export default function Home() {
       setSpinnerText("Checking C2 interface...");
       check();
     }
+
+    setSupportedBrowser(navigator.serial ? true : false);
   }, [port, c2InterfaceChecked, handleInitialization]);
 
   // Connect to Arduino and set chosen port - do not open the connection yet
@@ -351,7 +357,7 @@ export default function Home() {
       >
         <Intro />
 
-        {!isConnected && navigator.serial &&
+        {!isConnected && supportedBrowser &&
           <div className="row py-2">
             <div className="col">
               <div className="d-flex justify-content-center" >
@@ -366,7 +372,7 @@ export default function Home() {
             </div>
         </div>}
 
-        {!navigator.serial && <Browser /> }
+        {!supportedBrowser && <Browser /> }
 
         {c2InterfaceChecked &&
           <>
