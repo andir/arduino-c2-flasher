@@ -105,3 +105,13 @@ a {
     color-scheme: dark;
   }
 }
+
+.drop-zone {
+  padding: 20px;
+  cursor: pointer;
+}
+
+.drop-zone p {
+  margin: 0;
+  text-align: center;
+}
