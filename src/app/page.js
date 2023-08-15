@@ -97,7 +97,7 @@ export default function Home() {
     }
 
     setDisableControls(false);
-  }, [c2, readDataTemp]);
+  }, [appendError, cleanErrors, c2, readDataTemp]);
 
   // Write HEX file to device - displays spinner
   const handleC2InterfaceWrite = useCallback(async (files) => {
@@ -137,7 +137,7 @@ export default function Home() {
     setHasWritten(true);
     setDisableControls(false);
     setShowSpinner(false);
-  });
+  }, [appendError, cleanErrors]);
 
   const handleC2InterfaceFlash = useCallback(async (e) => {
     e.preventDefault();
@@ -222,7 +222,7 @@ export default function Home() {
 
     setDisableControls(false);
     setShowSpinner(false);
-  });
+  }, [port]);
 
   // Close connection and reload page in order to reset state
   const handleArduinoDisconnect = useCallback(async () => {
@@ -236,7 +236,7 @@ export default function Home() {
     }
 
     location.reload();
-  });
+  }, []);
 
   // Erase device - displays spinner
   const handleC2InterfaceErase = useCallback(async () => {
@@ -256,7 +256,7 @@ export default function Home() {
 
     setShowSpinner(false);
     setDisableControls(false);
-  });
+  }, [appendError, cleanErrors]);
 
   const handleInitialization = useCallback(async () => {
     setShowSpinner(true);
@@ -312,7 +312,7 @@ export default function Home() {
       setSpinnerText("Checking C2 interface...");
       check();
     }
-  }, [port, c2InterfaceChecked, setC2interfaceChecked, setDeviceInfo, setSpinnerText]);
+  }, [port, c2InterfaceChecked, handleInitialization]);
 
   // Connect to Arduino and set chosen port - do not open the connection yet
   const handleArduinoConnect = useCallback(async () => {
@@ -331,7 +331,7 @@ export default function Home() {
 
     setShowSpinner(false);
     setDisableControls(false);
-  });
+  }, []);
 
   const formattedReadData = readData.map((item) => {
     const dataString = Array.from(item.data).map((byte) => byte.toString(16).padStart(2, '0').toUpperCase());
@@ -526,7 +526,7 @@ export default function Home() {
                               <section>
                                 <div {...getRootProps()}>
                                   <input {...getInputProps()} />
-                                  <p>Drag 'n' drop a HEX file here, or click to select a file.</p>
+                                  <p>Drag and drop a HEX file here, or click to select a file.</p>
                                 </div>
                               </section>
                             )}

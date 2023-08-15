@@ -8,7 +8,7 @@ export default function Browser() {
         >
           <strong>Your Browser is not supported!</strong><br />
           Your Broswer does not support the web serial functionality. Please use a Chromium based Browser like Chrome, Edge, Vivaldi or similar.<br />
-          <strong>Attention:</strong> Although Brave being a Chromium based Browser, they don't trust their users enough to let them use web serial.
+          <strong>Attention:</strong> Although Brave being a Chromium based Browser, they do not trust their users enough to let them use web serial.
         </div>
       </div>
     </div>
