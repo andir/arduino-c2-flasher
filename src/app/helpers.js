@@ -1,19 +1,24 @@
-const readFileAsync = (file) => {
+const readFileAsync = (file, asArrayBuffer = false) => {
   return new Promise((resolve, reject) => {
-    let reader = new FileReader()
+    let reader = new FileReader();
     reader.onload = () => {
-      resolve(reader.result)
+      resolve(reader.result);
+    };
+    reader.onerror = reject;
+
+    if(asArrayBuffer) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
     }
-    reader.onerror = reject
-    reader.readAsText(file)
-  })
-}
+  });
+};
 
 const wait = (duration) => {
   return new Promise((resolve) => setTimeout(resolve, duration));
-}
+};
 
 export {
   readFileAsync,
   wait,
-}
+};

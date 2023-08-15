@@ -141,24 +141,39 @@ export default function Home() {
 
   const handleC2InterfaceFlash = useCallback(async (e) => {
     e.preventDefault();
+
+    setSpinnerText("Writing C2 interface to Arduino...");
+    setDisableControls(true);
+    setShowSpinner(true);
+
     const target = e.target;
     const board = target.board.value;
     let newReader = null;
     let newWriter = null;
 
+    // Set bin file based on board
+    let bin = "uno_nano";
+    switch(board) {
+      case "uno":
+      case "nano": {
+        bin = "uno_nano";
+      } break;
+    }
+
     // Read hex file for selected arduino
-    const response = await fetch(`/bins/${board}.hex`);
+    const response = await fetch(`/bins/${bin}.hex`);
     const data = await response.blob();
-    const fileData = await readFileAsync(data);
+    const fileData = await readFileAsync(data, true);
     const hexBuffer = avrbro.parseHex(new TextDecoder("utf-8").decode(fileData));
 
     // Newer bootloaders flash with faster speeds, try that first - if it does
     // not work, try the slower speed
     let timeoutId = null
 
-    const baudRates = [115200, 57000];
+    const baudRates = [115200, 57600];
     for(let i = 0; i < baudRates.length; i += 1) {
       const baudRate = baudRates[i];
+      console.log(`Attempting to flash with ${baudRate}`);
 
       try {
         await port.open({ baudRate });
@@ -183,7 +198,7 @@ export default function Home() {
 
         await avrbro.reset(newSerial);
         const success = await avrbro.flash(newSerial, hexBuffer, {
-          boardName: 'uno',//board,
+          boardName: board,
           debug: true,
         });
         await avrbro.closeSerial(newSerial);
@@ -191,18 +206,22 @@ export default function Home() {
 
         if (success) {
           setC2interfaceChecked(false);
-          return;
+          break;
         } else {
           console.log('an error has occurred.');
         }
       } catch(e) {
         console.log("Failed flashing hex file", e);
+        clearTimeout(timeoutId);
       }
 
       await newWriter.releaseLock();
       await newReader.releaseLock();
       await port.close();
     }
+
+    setDisableControls(false);
+    setShowSpinner(false);
   });
 
   // Close connection and reload page in order to reset state
@@ -284,7 +303,7 @@ export default function Home() {
           await handleInitialization();
         } else {
           setC2interfaceDetected(false);
-          port.close();
+          c2.current.close();
         }
 
         setShowSpinner(false);
@@ -560,7 +579,7 @@ export default function Home() {
                       aria-label="Select Arduino"
                     >
                       <option value="uno">Arduino UNO</option>
-                      <option value="uno_no_ping">Arduino Nano</option>
+                      <option value="nano">Arduino Nano</option>
                     </select>
                   </div>
 
