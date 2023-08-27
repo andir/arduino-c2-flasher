@@ -121,8 +121,8 @@ class C2 {
     }
 
     return {
-      id: '0x' + value[1].toString(16).padStart(2, '0'),
-      revision: '0x' + value[2].toString(16).padStart(2, '0'),
+      id: '0x' + value[1].toString(16).padStart(2, '0').toUpperCase(),
+      revision: '0x' + value[2].toString(16).padStart(2, '0').toUpperCase(),
     };
   }
 

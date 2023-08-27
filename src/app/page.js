@@ -275,6 +275,11 @@ export default function Home() {
         setSpinnerText("Getting device info...");
         const info = await c2.current.getDeviceInfo();
         setDeviceInfo(info);
+
+        // If 0xFF are returned for id and revision initi must have failed.
+        if(info.id === "0xFF" && info.revision === "0xFF") {
+          setInitializationFailed(true);
+        }
       } catch(e) {
         console.log("Failed fetching device info", e);
       }
