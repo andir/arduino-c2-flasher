@@ -165,7 +165,7 @@ export default function Home() {
     }
 
     // Read hex file for selected arduino
-    const response = await fetch(`/bins/${bin}.hex`);
+    const response = await fetch(`/arduino-c2-flasher/bins/${bin}.hex`);
     const data = await response.blob();
     const fileData = await readFileAsync(data, true);
     const hexBuffer = avrbro.parseHex(new TextDecoder("utf-8").decode(fileData));
