@@ -6,14 +6,11 @@ import {
   useState,
 } from 'react';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+import Script from 'next/script';
 import avrbro from 'avrbro';
 import Dropzone from 'react-dropzone';
 
 import 'bootstrap/dist/css/bootstrap.css';
-const DynamicHeader = dynamic(() => import('bootstrap/dist/js/bootstrap.js'), {
-  ssr: false,
-})
 
 import C2 from './C2';
 import {
@@ -33,6 +30,7 @@ export default function Home() {
   const [port, setPort] = useState(null);
 
   const [isConnected, setIsConnected] = useState(false);
+  const [portSelected, setPortSelected] = useState(false);
 
   const [c2InterfaceChecked, setC2interfaceChecked] = useState(false);
   const [c2InterfaceDetected, setC2interfaceDetected] = useState(false);
@@ -56,6 +54,9 @@ export default function Home() {
 
   const errorsTemp = useRef([]);
   const [errors, setErrors] = useState([]);
+
+  const [readError, setReadError] = useState(false);
+  const [openError, setOpenError] = useState(false);
 
   const cleanErrors = useCallback(() => {
     errorsTemp.current = [];
@@ -96,6 +97,7 @@ export default function Home() {
 
         setReadData(readDataTemp.current);
       } catch(e) {
+        setReadError(true);
         appendError(e);
       }
     }
@@ -296,23 +298,30 @@ export default function Home() {
       const check = async () => {
         setShowSpinner(true);
 
-        const baudRate = 1000000;
-        await port.open({ baudRate });
+        try {
+          const baudRate = 1000000;
+          await port.open({ baudRate });
 
-        // IMPORTANT: Give arduino some time
-        await wait(2000);
+          setIsConnected(true);
 
-        c2.current = new C2(port);
-        const hasC2Interface = await c2.current.hasInterface();
+          // IMPORTANT: Give arduino some time
+          await wait(2000);
 
-        setC2interfaceChecked(true);
-        if(hasC2Interface) {
-          setC2interfaceDetected(true);
+          c2.current = new C2(port);
+          const hasC2Interface = await c2.current.hasInterface();
 
-          await handleInitialization();
-        } else {
-          setC2interfaceDetected(false);
-          c2.current.close();
+          setC2interfaceChecked(true);
+          if(hasC2Interface) {
+            setC2interfaceDetected(true);
+
+            await handleInitialization();
+          } else {
+            setC2interfaceDetected(false);
+            c2.current.close();
+          }
+        } catch(e) {
+          setIsConnected(false);
+          setOpenError(true);
         }
 
         setShowSpinner(false);
@@ -335,9 +344,9 @@ export default function Home() {
       const newPort = await navigator.serial.requestPort();
 
       setPort(newPort);
-      setIsConnected(true);
+      setPortSelected(true);
     } catch(e) {
-      setIsConnected(false);
+      setPortSelected(false);
     }
 
     setShowSpinner(false);
@@ -363,8 +372,8 @@ export default function Home() {
         <Intro />
 
         {!isConnected && supportedBrowser &&
-          <div className="row py-2">
-            <div className="col">
+          <div className="row g-3 ">
+            <div className="col-12">
               <div className="d-flex justify-content-center" >
                 <button
                   className="btn btn-primary btn-lg"
@@ -375,7 +384,24 @@ export default function Home() {
                 </button>
               </div>
             </div>
-        </div>}
+
+
+          {openError &&
+            <div
+              className="col-12 alert alert-danger"
+              role="alert"
+            >
+              <p><strong>There was an error opening the serial port.</strong><br/>
+              Make sure the device is not claimed by any other program and try again.</p>
+              Known culprits for claiming serial devices are
+              <ul>
+                <li>having the application open in mutliple tabs</li>
+                <li>Arduino serial monitor</li>
+                <li>Cura</li>
+              </ul>
+              <strong>Note:</strong>You might need to unplug and re-plug your Arduino in order for it to be picked up correctly.
+            </div>}
+          </div>}
 
         {!supportedBrowser && <Browser /> }
 
@@ -478,6 +504,12 @@ export default function Home() {
                             Read MCU
                           </button>
                         </p>
+
+                        {readError &&
+                          <div className="alert alert-warning">
+                            It seems your MCU can not be read although a device ID could be fetched.<br/>
+                            This is often times an indicator that the lock byte is set to prevent read out via C2 interface. You might still be able to erase the MCU and flash new firmware.
+                          </div>}
 
                         <pre
                           style={{
@@ -614,9 +646,10 @@ export default function Home() {
                       className="alert alert-warning"
                       role="alert"
                     >
-                      <strong>Initialization failed!</strong><br/>
-                      <strong>C2 interface has been detected</strong>, but the MCU could not be initialized.<br/>
-                      Make sure that the wires are connected to the MCU, Arduino is connected with GND of the MCU and the MCU is powered.
+                      <p><strong>Initialization failed!</strong><br/>
+                      <strong>C2 interface has been detected to be flashed to the Arduino</strong>, but the MCU could not be initialized.<br/>
+                      Make sure that the wires are connected to the MCU, Arduino is connected with GND of the MCU and the MCU is powered.</p>
+                      If your MCU is on a PCB (like for example an ESC, AIO flight controller or similar), chances are that the C2 interface pins are broken out and next to each other close to the MCU. Should you not be sure which on is which, just try both combinations for <strong>CK</strong> and <strong>D</strong>.
                     </div>
                   </div>
 
@@ -650,6 +683,8 @@ export default function Home() {
       <Footer />
 
       {showSpinner && <Spinner text={spinnerText} />}
+
+      <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"/>
     </>
   );
 }
