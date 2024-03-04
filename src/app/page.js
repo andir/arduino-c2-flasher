@@ -358,12 +358,12 @@ export default function Home() {
 
       const a = (val) => (val & 0xFF).toString(16).padStart(2, "0");
       const sum = (items) => Array.from(items).reduce((a, b) => a + b, 0);
-      let address = a(item.address >> 8) + a(item.address & 0xFF);
+      const address = a(item.address >> 8) + a(item.address & 0xFF);
       const crc = sum([item.data.length, (item.address >> 8) & 0xFF, (item.address & 0xFF), 0x00]) + sum(item.data);
 
       return ':' + a(item.data.length)
 	  + address
-          + "85" /* FIXME: whats valid here?!? */
+          + "00"
 	  + dataString.join('')
           + a(crc);
   });
