@@ -354,9 +354,8 @@ export default function Home() {
   }, []);
 
   const formattedReadData = readData.map((item) => {
-      const dataString = Array.from(item.data).map((byte) => byte.toString(16).padStart(2, '0').toUpperCase());
-
       const a = (val) => (val & 0xFF).toString(16).padStart(2, "0");
+      const dataString = Array.from(item.data).map(a);
       const sum = (items) => Array.from(items).reduce((a, b) => a + b, 0);
       const address = a(item.address >> 8) + a(item.address & 0xFF);
       const crc = sum([item.data.length, (item.address >> 8) & 0xFF, (item.address & 0xFF), 0x00]) + sum(item.data);
